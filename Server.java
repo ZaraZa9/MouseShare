@@ -6,10 +6,10 @@ public class Server {
     static final int DISCOVERY_PORT = 6000;
 
     public static void main(String[] args) throws IOException {
-        // Start the discovery responder in its own thread
+        // start the discovery responder in its own thread
         new Thread(Server::runDiscoveryListener).start();
 
-        // Start the normal TCP server
+        // start the normal TCP server
         ServerSocket serverSocket = new ServerSocket(TCP_PORT);
         System.out.println("TCP server listening on port " + TCP_PORT);
 
@@ -25,6 +25,12 @@ public class Server {
                 System.out.println("Received: " + line);
                 out.println("Echo: " + line);
                 if (line.equalsIgnoreCase("bye")) break;
+
+                // while there is a connection we also want to send the cursor position to the client
+                CursorCapture cursorCapture = new CursorCapture(new CursorPos(0, 0));
+                cursorCapture.updatePosition();
+                CursorPos pos = cursorCapture.getPosition();
+                out.println("Cursor Position Server: (" + pos.getX() + ", " + pos.getY() + ")");
             }
             clientSocket.close();
             System.out.println("Client disconnected");
@@ -47,8 +53,8 @@ public class Server {
                     byte[] responseBytes = response.getBytes();
 
                     DatagramPacket responsePacket = new DatagramPacket(
-                            responseBytes, responseBytes.length,
-                            packet.getAddress(), packet.getPort());
+                        responseBytes, responseBytes.length,
+                        packet.getAddress(), packet.getPort());
                     socket.send(responsePacket);
                     System.out.println("Replied to discovery request from " + packet.getAddress());
                 }

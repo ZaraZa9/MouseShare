@@ -5,6 +5,7 @@ import java.util.*;
 public class Client {
     static final int DISCOVERY_PORT = 6000;
     static final int TIMEOUT_MS = 3000; 
+    static String clientName = "Client-" + UUID.randomUUID().toString().substring(0, 8);
     
     public static void main(String[] args) throws IOException {
         List<String[]> servers = discoverServers(); 
@@ -23,6 +24,20 @@ public class Client {
         String[] chosen = servers.get(0);
         System.out.println("Auto-connecting to " + chosen[0] + ":" + chosen[2]);
         connectToServer(chosen[0], Integer.parseInt(chosen[2]));
+
+        //cursor position capture loop
+        while(true) {
+            CursorCapture cursorCapture = new CursorCapture(new CursorPos(0, 0));
+            cursorCapture.updatePosition();
+            CursorPos pos = cursorCapture.getPosition();
+            System.out.println("Cursor Position "+ clientName +" : (" + pos.getX() + ", " + pos.getY() + ")");
+            try {
+                Thread.sleep(1000); // Capture every second
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
     }
 
     static List<String[]> discoverServers() throws IOException {
