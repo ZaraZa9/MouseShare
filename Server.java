@@ -4,10 +4,12 @@ import java.net.*;
 public class Server {
     static final int TCP_PORT = 5000;
     static final int DISCOVERY_PORT = 6000;
+    static CursorCapture cursorCapture = new CursorCapture();
 
     public static void main(String[] args) throws IOException {
         // start the discovery responder in its own thread
         new Thread(Server::runDiscoveryListener).start();
+        new Thread(cursorCapture::run).start();
 
         // start the normal TCP server
         ServerSocket serverSocket = new ServerSocket(TCP_PORT);
@@ -26,11 +28,10 @@ public class Server {
                 out.println("Echo: " + line);
                 if (line.equalsIgnoreCase("bye")) break;
 
+
                 // while there is a connection we also want to send the cursor position to the client
-                CursorCapture cursorCapture = new CursorCapture(new CursorPos(0, 0));
-                cursorCapture.updatePosition();
                 CursorPos pos = cursorCapture.getPosition();
-                out.println("Cursor Position Server: (" + pos.getX() + ", " + pos.getY() + ")");
+                System.out.println("Cursor Position Server: (" + pos.getX() + ", " + pos.getY() + ")");
             }
             clientSocket.close();
             System.out.println("Client disconnected");

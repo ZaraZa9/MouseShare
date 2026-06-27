@@ -7,7 +7,7 @@ import com.sun.jna.platform.win32.WinUser.HHOOK;
 import com.sun.jna.platform.win32.WinUser.LowLevelMouseProc;
 import com.sun.jna.platform.win32.WinUser.MSG;
 
-public class CursorCapture {
+public class GlobalMouseHook {
     private static final int WM_MOUSEMOVE = 0x0200;
 
     private final CursorPos position = new CursorPos(0, 0);
@@ -42,6 +42,7 @@ public class CursorCapture {
             }
         }
 
+
         LPARAM lp = new LPARAM(Pointer.nativeValue(lParam.getPointer()));
         return User32.INSTANCE.CallNextHookEx(hook, nCode, wParam, lp);
     };
@@ -59,12 +60,7 @@ public class CursorCapture {
     }
 
     public void run() {
-        hook = User32.INSTANCE.SetWindowsHookEx(
-            WinUser.WH_MOUSE_LL,
-            hookProc,
-            Kernel32.INSTANCE.GetModuleHandle(null),
-            0
-        );
+        hook = User32.INSTANCE.SetWindowsHookEx(WinUser.WH_MOUSE_LL,hookProc,Kernel32.INSTANCE.GetModuleHandle(null),0);
 
         if (hook == null) {
             throw new RuntimeException("Failed to install mouse hook");
@@ -75,28 +71,31 @@ public class CursorCapture {
         while (User32.INSTANCE.GetMessage(msg, null, 0, 0) != 0) {
             User32.INSTANCE.TranslateMessage(msg);
             User32.INSTANCE.DispatchMessage(msg);
+
         }
     }
 
     public void destroy() {
         if (hook != null) {
+
             User32.INSTANCE.UnhookWindowsHookEx(hook);
+
         }
     }
 
     public static void main(String[] args) {
-
-        CursorCapture capture = new CursorCapture();
+        GlobalMouseHook hook = new GlobalMouseHook();
 
         Thread pollThread = new Thread(() -> {
             while (true) {
-                if (capture.hasMoved()) {
-                    System.out.println(capture.getPosition());
+                if (hook.hasMoved()) {
+
+                    System.out.println(hook.getPosition());
                 }
             }
         });
         pollThread.start();
 
-        capture.run(); // blocks here forever, pimping Windows messages
+        hook.run();
     }
 }

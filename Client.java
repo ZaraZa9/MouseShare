@@ -6,9 +6,11 @@ public class Client {
     static final int DISCOVERY_PORT = 6000;
     static final int TIMEOUT_MS = 3000; 
     static String clientName = "Client-" + UUID.randomUUID().toString().substring(0, 8);
+    static CursorCapture cursorCapture = new CursorCapture();
     
     public static void main(String[] args) throws IOException {
         List<String[]> servers = discoverServers(); 
+        new Thread(cursorCapture::run).start();
 
         if (servers.isEmpty()) {
             System.out.println("No servers found on the network.");
@@ -27,8 +29,6 @@ public class Client {
 
         //cursor position capture loop
         while(true) {
-            CursorCapture cursorCapture = new CursorCapture(new CursorPos(0, 0));
-            cursorCapture.updatePosition();
             CursorPos pos = cursorCapture.getPosition();
             System.out.println("Cursor Position "+ clientName +" : (" + pos.getX() + ", " + pos.getY() + ")");
             try {
@@ -37,6 +37,14 @@ public class Client {
                 Thread.currentThread().interrupt();
                 break;
             }
+            //sends the cursor position to the server
+            try (Socket socket = new Socket(chosen[0], Integer.parseInt(chosen[2]))) {
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                out.println("Cursor Position "+ clientName +" : (" + pos.getX() + ", " + pos.getY() + ")");
+            } catch (IOException e) {
+                System.out.println("Error sending cursor position: " + e.getMessage());
+            }
+
         }
     }
 

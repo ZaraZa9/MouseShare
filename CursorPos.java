@@ -1,25 +1,44 @@
 public class CursorPos {
-    private int x;
-    private int y;
-    
-    public CursorPos(int x, int y) {
+    private double x;
+    private double y;
+    private double vectorX;
+    private double vectorY;
+
+    public CursorPos(double x, double y) {
         this.x = x;
         this.y = y;
+        this.vectorX = 0;
+        this.vectorY = 0;
     }
 
-    public int getX() {
+    public double getX() {
         return x;
     }
-
-    public int getY() {
+    public double getY() { 
         return y;
     }
-
-    public void setX(int x) {
-        this.x = x;
+    public double getVectorX() { 
+        return vectorX;
+    }
+    public double getVectorY() { 
+        return vectorY;
     }
 
-    public void setY(int y) {
-        this.y = y;
+    public void setX(double x) { 
+        this.x = x;
+    }
+    public void setY(double y) { 
+        this.y = y; 
+    }
+    public void setVectorX(double vectorX) { 
+        this.vectorX = vectorX; 
+    }
+    public void setVectorY(double vectorY) { 
+        this.vectorY = vectorY; 
+    }
+
+    @Override
+    public String toString() {
+        return "pos=(" + x + ", " + y + ") vec=(" + vectorX + ", " + vectorY + ")";
     }
 }
