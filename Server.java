@@ -16,11 +16,19 @@ public class Server {
         while (true) {
             Socket clientSocket = serverSocket.accept();
             System.out.println("Client connected: " + clientSocket.getInetAddress());
-            new Thread(() -> handleClient(clientSocket)).start();
+            new Thread(() -> {
+                try {
+                    handleClient(clientSocket);
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }).start();
         }
     }
 
-    static void handleClient(Socket clientSocket) {
+    static void handleClient(Socket clientSocket) throws Exception {
+        BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         try (PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
             while (!clientSocket.isClosed()) {
                 if (cursorCapture.hasMoved()) {
@@ -28,12 +36,14 @@ public class Server {
                     String message = pos.getX() + "," + pos.getY() + "," + pos.getVectorX() + "," + pos.getVectorY();
                     out.println(message);
                     System.out.println("Sent: " + message);
+                    System.out.println("From client: " + in.readLine());
                 }
             }
         } catch (IOException e) {
             System.out.println("Client disconnected: " + e.getMessage());
         } finally {
-            try { clientSocket.close(); } catch (IOException ignored) {}
+            try { clientSocket.close(); } 
+            catch (IOException ignored) {}
         }
     }
 
