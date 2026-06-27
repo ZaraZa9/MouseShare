@@ -29,21 +29,36 @@ public class Server {
 
     static void handleClient(Socket clientSocket) throws Exception {
         BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        try (PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
+        PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+
+        // separate thread to read clients cursor stream
+        new Thread(() -> {
+            try {
+                String line;
+                while ((line = in.readLine()) != null) {
+                    System.out.println("From client: " + line);
+                    // later: apply cursor movement here
+                }
+            } catch (IOException e) {
+                System.out.println("Client read error: " + e.getMessage());
+            }
+        }).start();
+
+        // main thread sends servers cursor stream freely
+        try {
             while (!clientSocket.isClosed()) {
                 if (cursorCapture.hasMoved()) {
                     CursorPos pos = cursorCapture.getPosition();
                     String message = pos.getX() + "," + pos.getY() + "," + pos.getVectorX() + "," + pos.getVectorY();
                     out.println(message);
                     System.out.println("Sent: " + message);
-                    System.out.println("From client: " + in.readLine());
                 }
+                Thread.sleep(1);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.println("Client disconnected: " + e.getMessage());
         } finally {
-            try { clientSocket.close(); } 
-            catch (IOException ignored) {}
+            try { clientSocket.close(); } catch (IOException ignored) {}
         }
     }
 

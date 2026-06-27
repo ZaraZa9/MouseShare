@@ -8,7 +8,7 @@ public class Client {
     static String clientName = "Client-" + UUID.randomUUID().toString().substring(0, 8);
     static CursorCapture cursorCapture = new CursorCapture();
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, Exception {
         List<String[]> servers = discoverServers();
         new Thread(cursorCapture::run).start();
 
@@ -51,6 +51,7 @@ public class Client {
                 out.println(message);
                 System.out.println("Sent: " + message);
             }
+            Thread.sleep(1);
         }
     }
 

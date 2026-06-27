@@ -1,8 +1,7 @@
 import java.util.Scanner;
-import java.io.IOException;
 
 public class Activate {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         try (//user input to select server or client mode
         Scanner scanner = new Scanner(System.in)) {
             System.out.println("Select mode: (1) Server, (2) Client");
